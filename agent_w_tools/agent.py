@@ -20,19 +20,19 @@ def add(a:int, b:int):
     return a + b
 @tool
 def subtract(a:int, b:int):
-    """Function adds two numbers. """
+    """Function subtracts two numbers. """
     return a - b
 @tool
 def divide(a:int, b:int):
-    """Function adds two numbers. """
+    """Function divide two numbers. """
     return a / b
 @tool
 def multiply(a:int, b:int):
-    """Function adds two numbers. """
+    """Function multiply two numbers. """
     return a * b
 
 
-tools = [add,divide, multiply, subtract]
+tools = [add, divide, multiply, subtract]
 
 
 model = init_chat_model("google_genai:gemini-2.0-flash").bind_tools(tools)
