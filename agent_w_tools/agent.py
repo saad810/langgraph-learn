@@ -18,8 +18,21 @@ class AgentState(TypedDict):
 def add(a:int, b:int):
     """Function adds two numbers. """
     return a + b
+@tool
+def subtract(a:int, b:int):
+    """Function adds two numbers. """
+    return a - b
+@tool
+def divide(a:int, b:int):
+    """Function adds two numbers. """
+    return a / b
+@tool
+def multiply(a:int, b:int):
+    """Function adds two numbers. """
+    return a * b
 
-tools = [add]
+
+tools = [add,divide, multiply, subtract]
 
 
 model = init_chat_model("google_genai:gemini-2.0-flash").bind_tools(tools)
@@ -47,4 +60,28 @@ graph.add_node(
 )
 
 tool_node = ToolNode(tools = tools)
-graph.add_node("tools", tool_node)
+graph.add_node("my_tools", tool_node)
+
+graph.set_entry_point("my-agent")
+graph.add_conditional_edges(
+    "my-agent",
+    should_continue,
+    {
+        "continue": "my_tools",
+        "end": END,
+    },
+)
+graph.add_edge("my_tools", "my-agent")
+
+app = graph.compile()
+
+def print_stream(stream):
+    for message in stream:
+        message = message["messages"][-1]
+        if isinstance(message, tuple):
+            print(message)
+        else:
+            message.pretty_print()
+
+inputs = {"messages": [("user", "(40+12)/2+2*(3-1)")]}
+print_stream(app.stream(inputs, stream_mode="values"))
