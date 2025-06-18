@@ -6,6 +6,7 @@ from langchain_core.tools import tool
 from langgraph.graph.message import add_messages
 from langgraph.graph import StateGraph, END
 from langgraph.prebuilt import ToolNode
+from IPython.display import display, Image
 
 
 load_dotenv()
@@ -13,6 +14,8 @@ load_dotenv()
 class AgentState(TypedDict):
     messages: Annotated[Sequence[BaseMessage], add_messages]
 
+
+agent_name = "my-agent"
 
 @tool
 def add(a:int, b:int):
@@ -55,25 +58,30 @@ def should_continue(state: AgentState):
 
 graph = StateGraph(AgentState)
 graph.add_node(
-    "my-agent",
+    agent_name,
     model_call,
 )
 
 tool_node = ToolNode(tools = tools)
 graph.add_node("my_tools", tool_node)
 
-graph.set_entry_point("my-agent")
+graph.set_entry_point(agent_name)
 graph.add_conditional_edges(
-    "my-agent",
+    agent_name,
     should_continue,
     {
         "continue": "my_tools",
         "end": END,
     },
 )
-graph.add_edge("my_tools", "my-agent")
+graph.add_edge("my_tools", agent_name)
 
 app = graph.compile()
+
+graph_image = app.get_graph().draw_mermaid_png()
+with open(f"agent_visual_graphs/{agent_name}.png", "wb") as f:
+    f.write(graph_image)
+print("Graph saved as graph.png. Open it to view.")
 
 def print_stream(stream):
     for message in stream:
